@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const crypto = require('node:crypto');
+const { createHash } = require('crypto');
 
 require('dotenv').config();
 
@@ -15,12 +17,23 @@ mongoose.connect(uri, { useNewUrlParser: true });
 
 const connection = mongoose.connection;
 
+async function hash(string) {
+  return createHash('sha256').update(string).digest('hex');
+}
+
 connection.once('open', () => {
   console.log('MongoDB connection established.');
 });
 
 app.get('/', (req, res) => {
   res.send('Foxglove');
+});
+
+app.post('/hash', (req, res) => {
+  hash(req.body.awareness)
+    .then(hash => {
+      res.send(hash);
+    });
 });
 
 const usersRouter = require('./routes/users');
